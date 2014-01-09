@@ -36,6 +36,7 @@ import urllib2 as urllib2
 from urlparse import urljoin
 from logging import getLogger
 import socket
+import re
 
 log = getLogger(__name__)
 
@@ -373,7 +374,7 @@ class Client(object):
 
         # Construct and issue the request, read the response
         payload = ET.tostring(payload, pretty_print=True)
-        log.debug('=== SOAP REQUEST ===\n%s', payload)
+        log.debug('=== SOAP REQUEST ===\n%s', re.sub(r'password>.*?<', r'password>*****<', payload ))
         req = urllib2.Request(self.url, payload, httphdr)
         try:
             if self._inject:
