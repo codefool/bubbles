@@ -316,30 +316,34 @@ class SchemaObject(DynamicObject):
         '''
         Parse value and convert it to type
         '''
-        iselem = False
-        if ET.iselement(value):
-            iselem = True
-            xtype = value.get(xsi_type)
-            if xtype:
-                xtype = ns.expand(xtype, value.nsmap)
-                (prefix, t) = ns.split(xtype)
-                if prefix == ns.XS:
-                    type = 'xs:'+t
-                else:
-                    type = xtype
-            if value.get(xsi_nil) == 'true':
-                return None
-
-        if type.startswith('xs:'):
-            if iselem:
-                value = value.text
-            c = converter(type)
-            if value is not None and not c.check(value):
-                value = c.fromstr(value)
-        else:
-            if value == "":
-                value = None
-            value = self.__builder__.factory(type)(value, __relax__=self.__relax__)
+        try:
+            iselem = False
+            if ET.iselement(value):
+                iselem = True
+                xtype = value.get(xsi_type)
+                if xtype:
+                    xtype = ns.expand(xtype, value.nsmap)
+                    (prefix, t) = ns.split(xtype)
+                    if prefix == ns.XS:
+                        type = 'xs:'+t
+                    else:
+                        type = xtype
+                if value.get(xsi_nil) == 'true':
+                    return None
+    
+            if type.startswith('xs:'):
+                if iselem:
+                    value = value.text
+                c = converter(type)
+                if value is not None and not c.check(value):
+                    value = c.fromstr(value)
+            else:
+                if value == "":
+                    value = None
+                value = self.__builder__.factory(type)(value, __relax__=self.__relax__)
+        except ValueError:
+            # leave the value as-is
+            pass
         return value
 
     def __fromiter__(self, items):
